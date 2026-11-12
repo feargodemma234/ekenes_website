@@ -1,170 +1,248 @@
 :root {
-    --primary: #000000;
-    --bg-white: #ffffff;
-    --text-dark: #333333;
-    --glass: rgba(255, 255, 255, 0.85);
-    --border: #e0e0e0;
+    --bg-color: #050505;
+    --card-bg: rgba(20, 20, 25, 0.6);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --text-main: #ffffff;
+    --text-muted: #a1a1aa;
+    --whatsapp-green: #25D366;
+    --accent: #8b5cf6; /* Purple accent */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text-dark);
-    background-color: var(--bg-white);
-    overflow-x: hidden;
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Prevents scrollbars from background animation */
+    position: relative;
 }
 
-/* --- Live Wallpaper Background --- */
-#live-wallpaper {
-    position: fixed;
+/* --- Awesome Animated Background --- */
+.glow-bg {
+    position: absolute;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
     z-index: -1;
-    background: linear-gradient(45deg, #f0f0f0, #ffffff, #e6e6e6, #fafafa);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
+    overflow: hidden;
+    filter: blur(80px);
 }
 
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+.glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: float 10s infinite ease-in-out alternate;
+}
+
+.orb-1 {
+    width: 300px;
+    height: 300px;
+    background: #4f46e5; /* Indigo */
+    top: -10%;
+    left: -10%;
+}
+
+.orb-2 {
+    width: 400px;
+    height: 400px;
+    background: #9333ea; /* Purple */
+    bottom: -20%;
+    right: -10%;
+    animation-duration: 15s;
+}
+
+.orb-3 {
+    width: 200px;
+    height: 200px;
+    background: #25D366; /* WhatsApp Green */
+    top: 40%;
+    left: 40%;
+    opacity: 0.2;
+    animation-duration: 8s;
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(50px, 50px) scale(1.2); }
 }
 
 /* --- Layout --- */
 .container {
-    max-width: 400px;
-    margin: 40px auto;
+    width: 100%;
+    max-width: 420px;
     padding: 20px;
-    position: relative;
+    z-index: 1;
 }
 
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+    text-align: center;
+    margin-bottom: 40px;
 }
 
 .logo {
-    font-weight: bold;
-    border: 2px solid var(--primary);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    color: white;
+    font-size: 28px;
+    font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    background: white;
+    border-radius: 50%;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
 }
 
 h1 {
-    font-size: 20px;
-    margin: 0;
-    text-align: right;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(to right, #fff, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.card {
-    background: var(--glass);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-}
-
-h2 {
-    font-size: 18px;
-    margin-top: 0;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
-}
-
-/* --- Forms & Buttons --- */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    box-sizing: border-box;
-    outline: none;
-    font-size: 16px;
-}
-
-input:focus {
-    border-color: var(--primary);
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-    font-size: 16px;
-}
-
-button:hover {
-    background-color: #333;
-}
-
-.btn-whatsapp {
-    background-color: #25D366;
-    color: white;
-    text-decoration: none;
-    display: block;
-    text-align: center;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
-.account-display {
-    font-size: 24px;
-    font-weight: bold;
+.subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 5px;
     letter-spacing: 2px;
-    text-align: center;
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    border: 1px dashed #ccc;
-    margin: 15px 0;
-    color: #000;
+    text-transform: uppercase;
 }
 
-.error-msg {
-    color: #ff3333;
-    font-size: 13px;
-    margin: 5px 0;
-    min-height: 15px;
+/* --- Glassmorphism Cards --- */
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 30px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     text-align: center;
+    position: relative;
 }
 
-.text-link {
-    display: block;
-    text-align: center;
-    font-size: 13px;
-    color: #666;
-    margin-top: 15px;
+.main-card {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.instruction {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+/* --- Account Box --- */
+.account-box {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
     cursor: pointer;
-    text-decoration: underline;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-#protected-content {
-    animation: fadeIn 0.5s ease-in-out;
+.account-box:hover {
+    border-color: var(--whatsapp-green);
+    background: rgba(37, 211, 102, 0.05);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+#account-number {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.copy-icon {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- Buttons --- */
+.btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--whatsapp-green);
+    color: #000;
+    box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(37, 211, 102, 0.4);
+}
+
+.community-card h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.community-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
 }
