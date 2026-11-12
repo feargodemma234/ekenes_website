@@ -1,63 +1,170 @@
-// REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-const GOOGLE_SHEET_API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
-
-// Fallback data in case the API fails or isn't set up yet
-let appSettings = {
-    websiteName: "The Empire Zone",
-    accountNumber: "935704",
-    whatsappGroup: "https://chat.whatsapp.com/"
-};
-
-// 1. Fetch data from Google Sheets on load
-async function fetchSettings() {
-    try {
-        // If you haven't set up the sheet yet, it will use the fallback data above
-        if (GOOGLE_SHEET_API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
-            console.log("Using fallback data. Add your Apps Script URL to fetch from Google Sheets.");
-        } else {
-            const response = await fetch(GOOGLE_SHEET_API_URL);
-            const data = await response.json();
-            appSettings = data;
-        }
-        updateUI();
-    } catch (error) {
-        console.error("Error fetching settings:", error);
-        updateUI(); // Load fallback data
-    }
+:root {
+    --primary: #000000;
+    --bg-white: #ffffff;
+    --text-dark: #333333;
+    --glass: rgba(255, 255, 255, 0.85);
+    --border: #e0e0e0;
 }
 
-// 2. Update UI with dynamic data
-function updateUI() {
-    document.getElementById('site-name').innerText = appSettings.websiteName;
-    document.getElementById('account-number').innerText = appSettings.accountNumber;
-    document.getElementById('wa-group-link').href = appSettings.whatsappGroup;
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-dark);
+    background-color: var(--bg-white);
+    overflow-x: hidden;
 }
 
-// 3. Handle Login (Email + 4 Digit Number)
-function handleLogin() {
-    const email = document.getElementById('email').value;
-    const pin = document.getElementById('pin').value;
-
-    if (!email || pin.length !== 4 || isNaN(pin)) {
-        alert("Please enter a valid email and exactly a 4-digit number PIN.");
-        return;
-    }
-
-    // Here you would normally send this to a backend for authentication
-    alert(`Login successful for ${email}`);
+/* --- Live Wallpaper Background --- */
+#live-wallpaper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background: linear-gradient(45deg, #f0f0f0, #ffffff, #e6e6e6, #fafafa);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
 }
 
-// 4. Send WhatsApp Payment Receipt
-function sendWhatsAppReceipt() {
-    const phoneNumber = "1234567890"; // REPLACE WITH YOUR BUSINESS WHATSAPP NUMBER
-    const message = `Hello ${appSettings.websiteName}, I have just made a payment to account ${appSettings.accountNumber}. Here is my receipt:`;
-    
-    // Encode the message for the URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Open WhatsApp Web/App
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-// Initialize App
-fetchSettings();
+/* --- Layout --- */
+.container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    position: relative;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    font-weight: bold;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: white;
+}
+
+h1 {
+    font-size: 20px;
+    margin: 0;
+    text-align: right;
+}
+
+.card {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+h2 {
+    font-size: 18px;
+    margin-top: 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+}
+
+/* --- Forms & Buttons --- */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-sizing: border-box;
+    outline: none;
+    font-size: 16px;
+}
+
+input:focus {
+    border-color: var(--primary);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #333;
+}
+
+.btn-whatsapp {
+    background-color: #25D366;
+    color: white;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.account-display {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-align: center;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px dashed #ccc;
+    margin: 15px 0;
+    color: #000;
+}
+
+.error-msg {
+    color: #ff3333;
+    font-size: 13px;
+    margin: 5px 0;
+    min-height: 15px;
+    text-align: center;
+}
+
+.text-link {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin-top: 15px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#protected-content {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
