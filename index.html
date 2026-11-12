@@ -5,65 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Empire Zone | Daily Contribution</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Live Wallpaper Background -->
-    <div id="live-wallpaper"></div>
+    <!-- Cool Animated Background -->
+    <div class="glow-bg">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
 
     <div class="container">
-        <!-- Logo & Site Name -->
+        <!-- Header -->
         <header>
-            <div class="logo">Ekene</div>
+            <div class="logo">E</div>
             <h1>The Empire Zone</h1>
+            <p class="subtitle">Daily Contribution Portal</p>
         </header>
 
-        <!-- LOGIN SECTION -->
-        <div class="card" id="login-section">
-            <h2>Sign In</h2>
-            <p style="font-size: 14px; color: #666; text-align: center; margin-bottom: 15px;">Enter your details to access the contribution portal.</p>
+        <!-- Payment Card -->
+        <div class="glass-card main-card">
+            <div class="badge">Official Account</div>
             
-            <input type="email" id="email" placeholder="Email Address" required>
+            <p class="instruction">Send your daily contribution to:</p>
             
-            <!-- 4 Digit PIN -->
-            <input type="password" id="pin" placeholder="Create a 4-Digit PIN" maxlength="4" pattern="\d{4}" required>
+            <!-- Account Number with Tap to Copy -->
+            <div class="account-box" onclick="copyAccountNumber()">
+                <span id="account-number">935704</span>
+                <span class="copy-icon" id="copy-text">Tap to Copy</span>
+            </div>
             
-            <p id="login-error" class="error-msg"></p>
-            
-            <button onclick="handleLogin()">Continue</button>
-            <span class="text-link" onclick="handleForgotPin()">Forgot PIN?</span>
+            <!-- Primary Action: Send Receipt -->
+            <button class="btn-primary" onclick="sendWhatsAppReceipt()">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                Send Payment Receipt
+            </button>
         </div>
 
-        <!-- PROTECTED CONTENT (Hidden until logged in) -->
-        <div id="protected-content" style="display: none;">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h2 style="margin: 0; border: none; padding: 0;">Welcome!</h2>
-                    <button onclick="handleLogout()" style="width: auto; padding: 5px 10px; font-size: 12px; background: #ff4d4d; color: white; border-radius: 5px; cursor: pointer;">Logout</button>
-                </div>
-            </div>
-
-            <!-- Payment Section -->
-            <div class="card">
-                <h2>Daily Contribution</h2>
-                <p style="text-align:center; margin-bottom:5px; font-size:14px; color:#666;">Send today's payment to:</p>
-                
-                <!-- Account Number is hardcoded here -->
-                <div class="account-display">935704</div>
-                
-                <button onclick="sendWhatsAppReceipt()" style="background-color: #25D366;">
-                    Send WhatsApp Payment Receipt
-                </button>
-            </div>
-
-            <!-- WhatsApp Group -->
-            <div class="card">
-                <h2>Community</h2>
-                <!-- Replace the href with your actual WhatsApp group link -->
-                <a href="https://chat.whatsapp.com/YOUR_GROUP_LINK" class="btn-whatsapp" target="_blank">
-                    Join WhatsApp Group
-                </a>
-            </div>
+        <!-- Community Card -->
+        <div class="glass-card community-card">
+            <h2>Join the Community</h2>
+            <p>Stay updated with announcements and daily updates.</p>
+            <a href="https://chat.whatsapp.com/YOUR_GROUP_LINK" class="btn-secondary" target="_blank">
+                Enter WhatsApp Group
+            </a>
         </div>
     </div>
 
