@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekene App | The Empire Zone</title>
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Live Wallpaper Background -->
+    <div id="live-wallpaper"></div>
+
+    <div class="container">
+        <!-- Logo & Site Name -->
+        <header>
+            <div class="logo">Ekene</div>
+            <h1 id="site-name">Loading...</h1>
+        </header>
+
+        <!-- Login / Sign In Section -->
+        <div class="card">
+            <h2>Login / Sign In</h2>
+            <input type="email" id="email" placeholder="Email Address" required>
+            <!-- Notes specify: number password (4 digit number) -->
+            <input type="password" id="pin" placeholder="4-Digit PIN" maxlength="4" pattern="\d{4}" title="Please enter exactly 4 digits" required>
+            <button onclick="handleLogin()">Login</button>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="card">
+            <h2>Payment</h2>
+            <p style="text-align:center; margin-bottom:5px; font-size:14px; color:#666;">Send payment to:</p>
+            <div class="account-display" id="account-number">Loading...</div>
+            
+            <!-- Send WhatsApp Payment Receipt -->
+            <button onclick="sendWhatsAppReceipt()" style="background-color: #25D366;">
+                Send WhatsApp Payment Receipt
+            </button>
+        </div>
+
+        <!-- WhatsApp Group -->
+        <div class="card">
+            <h2>Community</h2>
+            <a href="#" id="wa-group-link" class="btn-whatsapp" target="_blank">
+                Join WhatsApp Group
+            </a>
+        </div>
+    </div>
+
+    <!-- Link to the external JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
