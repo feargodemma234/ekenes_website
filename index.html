@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ekene App | The Empire Zone</title>
-    <!-- Link to the external CSS file -->
+    <title>The Empire Zone | Daily Contribution</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,40 +15,58 @@
         <!-- Logo & Site Name -->
         <header>
             <div class="logo">Ekene</div>
-            <h1 id="site-name">Loading...</h1>
+            <h1>The Empire Zone</h1>
         </header>
 
-        <!-- Login / Sign In Section -->
-        <div class="card">
-            <h2>Login / Sign In</h2>
-            <input type="email" id="email" placeholder="Email Address" required>
-            <!-- Notes specify: number password (4 digit number) -->
-            <input type="password" id="pin" placeholder="4-Digit PIN" maxlength="4" pattern="\d{4}" title="Please enter exactly 4 digits" required>
-            <button onclick="handleLogin()">Login</button>
-        </div>
-
-        <!-- Payment Section -->
-        <div class="card">
-            <h2>Payment</h2>
-            <p style="text-align:center; margin-bottom:5px; font-size:14px; color:#666;">Send payment to:</p>
-            <div class="account-display" id="account-number">Loading...</div>
+        <!-- LOGIN SECTION -->
+        <div class="card" id="login-section">
+            <h2>Sign In</h2>
+            <p style="font-size: 14px; color: #666; text-align: center; margin-bottom: 15px;">Enter your details to access the contribution portal.</p>
             
-            <!-- Send WhatsApp Payment Receipt -->
-            <button onclick="sendWhatsAppReceipt()" style="background-color: #25D366;">
-                Send WhatsApp Payment Receipt
-            </button>
+            <input type="email" id="email" placeholder="Email Address" required>
+            
+            <!-- 4 Digit PIN -->
+            <input type="password" id="pin" placeholder="Create a 4-Digit PIN" maxlength="4" pattern="\d{4}" required>
+            
+            <p id="login-error" class="error-msg"></p>
+            
+            <button onclick="handleLogin()">Continue</button>
+            <span class="text-link" onclick="handleForgotPin()">Forgot PIN?</span>
         </div>
 
-        <!-- WhatsApp Group -->
-        <div class="card">
-            <h2>Community</h2>
-            <a href="#" id="wa-group-link" class="btn-whatsapp" target="_blank">
-                Join WhatsApp Group
-            </a>
+        <!-- PROTECTED CONTENT (Hidden until logged in) -->
+        <div id="protected-content" style="display: none;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h2 style="margin: 0; border: none; padding: 0;">Welcome!</h2>
+                    <button onclick="handleLogout()" style="width: auto; padding: 5px 10px; font-size: 12px; background: #ff4d4d; color: white; border-radius: 5px; cursor: pointer;">Logout</button>
+                </div>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="card">
+                <h2>Daily Contribution</h2>
+                <p style="text-align:center; margin-bottom:5px; font-size:14px; color:#666;">Send today's payment to:</p>
+                
+                <!-- Account Number is hardcoded here -->
+                <div class="account-display">935704</div>
+                
+                <button onclick="sendWhatsAppReceipt()" style="background-color: #25D366;">
+                    Send WhatsApp Payment Receipt
+                </button>
+            </div>
+
+            <!-- WhatsApp Group -->
+            <div class="card">
+                <h2>Community</h2>
+                <!-- Replace the href with your actual WhatsApp group link -->
+                <a href="https://chat.whatsapp.com/YOUR_GROUP_LINK" class="btn-whatsapp" target="_blank">
+                    Join WhatsApp Group
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Link to the external JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
