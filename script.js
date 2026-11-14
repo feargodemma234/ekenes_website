@@ -1,10 +1,11 @@
 // --- SUPABASE CONFIGURATION ---
+// This connects your Tracker to the cloud so it saves across devices
 const SUPABASE_URL = "https://bextrzhnqzqsnrjuqplb.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_XEJYuY6BdMzjcM8Bq4jFAA_to92CRkY";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- APP CONFIGURATION ---
-const ADMIN_WHATSAPP_NUMBER = "2348012345678"; // <-- CHANGE TO YOUR WHATSAPP NUMBER
+const ADMIN_WHATSAPP_NUMBER = "2348012345678"; // <-- CHANGE THIS TO YOUR WHATSAPP NUMBER
 const ACCOUNT_NUMBER = "935704";
 let selectedReceiptFile = null;
 
@@ -92,7 +93,7 @@ for (let i = 0; i < 7; i++) {
     weekDays.push(day);
 }
 
-let trackerData = {}; // Will be loaded from Supabase
+let trackerData = {}; // Loaded from Supabase
 let deviceId = localStorage.getItem('empire_device_id');
 
 // Generate a unique ID for this phone/browser if they don't have one
@@ -101,7 +102,7 @@ if (!deviceId) {
     localStorage.setItem('empire_device_id', deviceId);
 }
 
-// Function to load tracker data from Supabase on page load
+// Load data from Supabase
 async function loadTrackerFromSupabase() {
     try {
         const { data, error } = await supabase
@@ -116,10 +117,10 @@ async function loadTrackerFromSupabase() {
     } catch (error) {
         console.error("Error loading tracker:", error);
     }
-    renderAdvancedTracker(); // Render the UI after loading
+    renderAdvancedTracker();
 }
 
-// Function to save tracker data to Supabase when they click a day
+// Save data to Supabase
 async function saveTrackerToSupabase() {
     try {
         await supabase
@@ -167,10 +168,7 @@ function renderAdvancedTracker() {
 
         dayEl.onclick = () => {
             if (isFuture) return; 
-            // Toggle status
             trackerData[dateStr] = !trackerData[dateStr];
-            
-            // Save to cloud & update UI instantly
             saveTrackerToSupabase(); 
             renderAdvancedTracker();
         };
@@ -198,7 +196,7 @@ function renderAdvancedTracker() {
 async function resetWeek() {
     if(confirm("Are you sure you want to reset your tracker for this week? This cannot be undone.")) {
         trackerData = {};
-        await saveTrackerToSupabase(); // Clear in Supabase
+        await saveTrackerToSupabase(); 
         renderAdvancedTracker();
     }
 }
@@ -216,4 +214,4 @@ function contactAdmin() {
 }
 
 // Initialize App
-loadTrackerFromSupabase(); // Load from cloud instead of local storage
+loadTrackerFromSupabase();
