@@ -1,5 +1,10 @@
-// --- CONFIGURATION ---
-const ADMIN_WHATSAPP_NUMBER = "2348079731637"; // Your number
+// --- SUPABASE CONFIGURATION ---
+const SUPABASE_URL = "https://bextrzhnqzqsnrjuqplb.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_XEJYuY6BdMzjcM8Bq4jFAA_to92CRkY";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// --- APP CONFIGURATION ---
+const ADMIN_WHATSAPP_NUMBER = "2348012345678"; // <-- CHANGE TO YOUR WHATSAPP NUMBER
 const ACCOUNT_NUMBER = "935704";
 let selectedReceiptFile = null;
 
@@ -71,55 +76,218 @@ async function sendWhatsAppReceipt() {
     }
 }
 
-// --- 4. Weekly Tracker Logic ---
-const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-let trackerData = JSON.parse(localStorage.getItem('empireTracker')) || { Mon: false, Tue: false, Wed: false, Thu: false, Fri: false, Sat: false, Sun: false };
+// --- 4. ADVANCED Weekly Tracker Logic ---
+const dailyAmount = 200;
+const today = new Date();
+const currentDay = today.getDay(); 
+const distanceToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
+const monday = new Date(today);
+monday.setDate(today.getDate() + distanceToMonday);
+monday.setHours(0,0,0,0);
 
-function renderTracker() {
-    const grid = document.getElementById('tracker-grid');
-    grid.innerHTML = '';
+const weekDays = [];
+for (let i = 0; i < 7; i++) {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i);
+    weekDays.push(day);
+}
+
+let trackerData = JSON.parse(localStorage.getItem('empireAdvancedTracker')) || {};
+
+function renderAdvancedTracker() {
+    const calendarRow = document.getElementById('calendar-row');
+    if(!calendarRow) return; // Guard clause
     
+    calendarRow.innerHTML = '';
     let paidCount = 0;
+    const todayStr = new Date().toISOString().split('T')[0];
 
-    days.forEach(day => {
-        const dayBox = document.createElement('div');
-        dayBox.className = `day-box ${trackerData[day] ? 'paid' : ''}`;
-        dayBox.innerText = day.charAt(0); // Just the first letter (M, T, W...)
+    weekDays.forEach((dateObj, index) => {
+        const dateStr = dateObj.toISOString().split('T')[0];
+        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+        const dayNum = dateObj.getDate();
+        const isPaid = trackerData[dateStr] === true;
+        const isFuture = dateStr > todayStr;
+        const isToday = dateStr === todayStr;
+
+        if (isPaid) paidCount++;
+
+        const dayEl = document.createElement('div');
+        dayEl.className = `cal-day ${isPaid ? 'paid' : ''} ${isFuture ? 'disabled' : ''}`;
         
-        if (trackerData[day]) paidCount++;
+        if (isToday && !isPaid) {
+            dayEl.style.borderColor = "var(--accent-purple)";
+            dayEl.style.boxShadow = "0 0 10px rgba(168, 85, 247, 0.3)";
+        }
 
-        dayBox.onclick = () => {
-            trackerData[day] = !trackerData[day];
-            localStorage.setItem('empireTracker', JSON.stringify(trackerData));
-            renderTracker();
+        dayEl.innerHTML = `
+            <span class="cal-day-name">${dayName}</span>
+            <span class="cal-day-num">${dayNum}</span>
+        `;
+
+        dayEl.onclick = () => {
+            if (isFuture) return; 
+            trackerData[dateStr] = !trackerData[dateStr];
+            localStorage.setItem('empireAdvancedTracker', JSON.stringify(trackerData));
+            renderAdvancedTracker();
         };
 
-        grid.appendChild(dayBox);
+        calendarRow.appendChild(dayEl);
     });
 
-    // Update Progress Bar
-    const percentage = (paidCount / 7) * 100;
-    document.getElementById('progress-bar').style.width = `${percentage}%`;
-    document.getElementById('progress-text').innerText = `${paidCount} / 7 Days Paid`;
+    const savedTotal = paidCount * dailyAmount;
+    document.getElementById('saved-amount').innerText = `₦${savedTotal.toLocaleString()}`;
+    document.getElementById('days-paid-count').innerText = `${paidCount} / 7`;
+
+    const percentage = Math.round((paidCount / 7) * 100);
+    document.getElementById('progress-percent').innerText = `${percentage}%`;
+    
+    const circle = document.getElementById('progress-ring');
+    if(circle) {
+        const offset = 251.2 - (percentage / 100) * 251.2;
+        circle.style.strokeDashoffset = offset;
+        circle.setAttribute('stroke', percentage === 100 ? '#a855f7' : 'var(--whatsapp-green)');
+    }
+}
+
+function resetWeek() {
+    if(confirm("Are you sure you want to reset your tracker for this week? This cannot be undone.")) {
+        trackerData = {};
+        localStorage.setItem('empireAdvancedTracker', JSON.stringify(trackerData));
+        renderAdvancedTracker();
+    }
 }
 
 // --- 5. Accordion Logic ---
 function toggleAccordion(button) {
     button.classList.toggle("active");
     const content = button.nextElementSibling;
-    
-    if (content.style.maxHeight) {
-        content.style.maxHeight = null;
-    } else {
-        content.style.maxHeight = content.scrollHeight + "px";
-    }
+    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
 }
 
 // --- 6. Contact Admin ---
 function contactAdmin() {
-    const message = "Hello Admin, I need help with my contribution.";
-    window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello Admin, I need help with my contribution.")}`, '_blank');
+}
+
+// --- 7. Register User (Supabase) ---
+async function registerUser() {
+    const input = document.getElementById('reg-input').value.trim();
+    if (!input) return alert("Please enter an email or phone number.");
+
+    const btn = event.target;
+    btn.innerText = "Generating...";
+    btn.disabled = true;
+
+    try {
+        // Check if user exists
+        const { data: existingUser } = await supabase
+            .from('users')
+            .select('email_phone')
+            .eq('email_phone', input)
+            .maybeSingle();
+
+        if (existingUser) {
+            alert("This email or phone number is already registered.");
+            btn.innerText = "Generate My ID & PIN";
+            btn.disabled = false;
+            return;
+        }
+
+        const userId = "EMP-" + Math.floor(1000 + Math.random() * 9000);
+        const pin = Math.floor(1000 + Math.random() * 9000).toString();
+
+        const { error: insertError } = await supabase
+            .from('users')
+            .insert([{ 
+                user_id: userId, 
+                email_phone: input, 
+                pin: pin 
+            }]);
+
+        if (insertError) throw insertError;
+
+        document.getElementById('register-section').style.display = 'none';
+        document.getElementById('id-display').style.display = 'block';
+        document.getElementById('display-userid').innerText = userId;
+        document.getElementById('display-pin').innerText = pin;
+
+    } catch (error) {
+        console.error(error);
+        alert("Error: " + (error.message || "Could not connect to database."));
+    } finally {
+        btn.innerText = "Generate My ID & PIN";
+        btn.disabled = false;
+    }
+}
+
+// --- 8. Recovery Toggles ---
+function toggleRecovery(type) {
+    const passForm = document.getElementById('recover-password-form');
+    const emailForm = document.getElementById('recover-email-form');
+
+    if (type === 'password') {
+        passForm.style.display = passForm.style.display === 'none' ? 'block' : 'none';
+        emailForm.style.display = 'none';
+    } else {
+        emailForm.style.display = emailForm.style.display === 'none' ? 'block' : 'none';
+        passForm.style.display = 'none';
+    }
+}
+
+// --- 9. Recover Password (By Email) ---
+async function recoverPassword() {
+    const input = document.getElementById('recover-email').value.trim();
+    const resultText = document.getElementById('password-result');
+    
+    if (!input) return alert("Please enter your Email or Phone.");
+    resultText.innerText = "Searching...";
+    resultText.style.color = "var(--text-muted)";
+
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('pin')
+            .eq('email_phone', input)
+            .maybeSingle();
+
+        if (data) {
+            resultText.innerHTML = `Your PIN is: <br><span style="font-size: 24px; color: var(--whatsapp-green);">${data.pin}</span>`;
+        } else {
+            resultText.innerText = "Email or Phone not found.";
+            resultText.style.color = "#ff4d4d";
+        }
+    } catch (error) {
+        resultText.innerText = "Network error.";
+    }
+}
+
+// --- 10. Recover Email (By PIN) ---
+async function recoverEmail() {
+    const input = document.getElementById('recover-pin').value.trim();
+    const resultText = document.getElementById('email-result');
+    
+    if (!input || input.length !== 4) return alert("Please enter your 4-digit PIN.");
+    resultText.innerText = "Searching...";
+    resultText.style.color = "var(--text-muted)";
+
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('email_phone')
+            .eq('pin', input)
+            .maybeSingle();
+
+        if (data) {
+            resultText.innerHTML = `Your Email/Phone is: <br><span style="font-size: 16px; color: var(--whatsapp-green);">${data.email_phone}</span>`;
+        } else {
+            resultText.innerText = "PIN not found.";
+            resultText.style.color = "#ff4d4d";
+        }
+    } catch (error) {
+        resultText.innerText = "Network error.";
+    }
 }
 
 // Initialize App
-renderTracker();
+renderAdvancedTracker();
