@@ -5,23 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Empire Zone | Daily Contribution</title>
     
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
+        <!-- Header -->
         <header>
             <div class="logo">E</div>
             <h1>The Empire Zone</h1>
             <p class="subtitle">Build Wealth, Daily.</p>
         </header>
 
+        <!-- 1. Daily Payment Card -->
         <div class="glass-card main-card">
             <div class="badge">Official Account</div>
             <p class="instruction">Send your ₦200 daily contribution to:</p>
@@ -31,6 +33,7 @@
                 <span class="copy-icon" id="copy-text">Tap to Copy</span>
             </div>
             
+            <!-- Receipt Attachment Area -->
             <div class="upload-section">
                 <input type="file" id="receipt-upload" accept="image/*" hidden>
                 <label for="receipt-upload" class="upload-btn" id="upload-label">
@@ -49,44 +52,17 @@
             </button>
         </div>
 
-        <div class="glass-card tracker-card">
-            <h2>Weekly Progress</h2>
-            <p class="plan-desc">Track your daily ₦200 contribution</p>
-            
-            <div class="tracker-dashboard">
-                <div class="progress-circle-container">
-                    <svg class="progress-ring" width="100" height="100">
-                        <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
-                        <circle class="progress-ring__circle" id="progress-ring" stroke="var(--whatsapp-green)" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
-                    </svg>
-                    <div class="progress-text-inner">
-                        <span id="progress-percent">0%</span>
-                    </div>
-                </div>
-
-                <div class="tracker-stats">
-                    <div class="stat-box">
-                        <span class="stat-label">Saved This Week</span>
-                        <span class="stat-value" id="saved-amount">₦0</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">Days Paid</span>
-                        <span class="stat-value" id="days-paid-count">0 / 7</span>
-                    </div>
-                </div>
+        <!-- NEW TEXT SECTION -->
+        <div class="glass-card about-card">
+            <h2>Our Vision: The Power of Consistency</h2>
+            <div class="about-text">
+                <p>Welcome to <strong>The Empire Zone</strong>. True wealth is never built overnight; it is the result of small, disciplined actions repeated every single day. We believe that financial freedom starts with a simple commitment to yourself.</p>
+                <p>By setting aside just ₦200 daily, you are doing more than saving money—you are building a habit of accountability. Whether you are saving for a personal goal, an emergency fund, or a new business, this community is designed to keep you motivated and on track.</p>
+                <p>Stay consistent, trust the process, and watch your daily discipline transform into your weekly reward. Your empire starts today.</p>
             </div>
-
-            <!-- THIS IS WHERE THE DAYS GO -->
-            <div class="calendar-row" id="calendar-row">
-                <!-- The JS will inject the buttons here -->
-            </div>
-            
-            <button class="btn-outline reset-btn" onclick="resetWeek()">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                Reset Week
-            </button>
         </div>
 
+        <!-- 2. Plan & Payout Rules -->
         <div class="glass-card plan-card">
             <h2>How It Works</h2>
             <p class="plan-desc">Save small daily, collect big weekly!</p>
@@ -127,11 +103,12 @@
             </div>
         </div>
 
+        <!-- 3. Community & Support -->
         <div class="glass-card community-card">
             <h2>Community & Support</h2>
             <p>Join the group for updates or DM the admin directly.</p>
             
-            <a href="https://chat.whatsapp.com/https://chat.whatsapp.com/GdpC3fHwu3OIlCHWhI6M75?s=cl&p=a&iam=2" class="btn-secondary" target="_blank" style="margin-bottom: 10px;">
+            <a href="https://chat.whatsapp.com/YOUR_GROUP_LINK" class="btn-secondary" target="_blank" style="margin-bottom: 10px;">
                 Join WhatsApp Group
             </a>
             
@@ -140,15 +117,17 @@
             </button>
         </div>
 
+        <!-- Footer -->
         <footer>
             <div class="secure-badge">
                 <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 Secure Portal
             </div>
-            <p>&copy; 2026 The Empire Zone. All rights reserved.</p>
+            <p>&copy; 2024 The Empire Zone. All rights reserved.</p>
         </footer>
     </div>
 
+    <!-- Link to JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
