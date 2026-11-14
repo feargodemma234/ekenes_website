@@ -76,7 +76,7 @@ async function sendWhatsAppReceipt() {
     }
 }
 
-// --- 4. ADVANCED Weekly Tracker Logic ---
+// --- 4. SUPABASE CLOUD TRACKER LOGIC ---
 const dailyAmount = 200;
 const today = new Date();
 const currentDay = today.getDay(); 
@@ -92,11 +92,51 @@ for (let i = 0; i < 7; i++) {
     weekDays.push(day);
 }
 
-let trackerData = JSON.parse(localStorage.getItem('empireAdvancedTracker')) || {};
+let trackerData = {}; // Will be loaded from Supabase
+let deviceId = localStorage.getItem('empire_device_id');
+
+// Generate a unique ID for this phone/browser if they don't have one
+if (!deviceId) {
+    deviceId = crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('empire_device_id', deviceId);
+}
+
+// Function to load tracker data from Supabase on page load
+async function loadTrackerFromSupabase() {
+    try {
+        const { data, error } = await supabase
+            .from('trackers')
+            .select('paid_days')
+            .eq('device_id', deviceId)
+            .maybeSingle();
+
+        if (data && data.paid_days) {
+            trackerData = data.paid_days;
+        }
+    } catch (error) {
+        console.error("Error loading tracker:", error);
+    }
+    renderAdvancedTracker(); // Render the UI after loading
+}
+
+// Function to save tracker data to Supabase when they click a day
+async function saveTrackerToSupabase() {
+    try {
+        await supabase
+            .from('trackers')
+            .upsert({ 
+                device_id: deviceId, 
+                paid_days: trackerData,
+                updated_at: new Date()
+            });
+    } catch (error) {
+        console.error("Error saving tracker:", error);
+    }
+}
 
 function renderAdvancedTracker() {
     const calendarRow = document.getElementById('calendar-row');
-    if(!calendarRow) return; // Guard clause
+    if(!calendarRow) return; 
     
     calendarRow.innerHTML = '';
     let paidCount = 0;
@@ -127,18 +167,23 @@ function renderAdvancedTracker() {
 
         dayEl.onclick = () => {
             if (isFuture) return; 
+            // Toggle status
             trackerData[dateStr] = !trackerData[dateStr];
-            localStorage.setItem('empireAdvancedTracker', JSON.stringify(trackerData));
+            
+            // Save to cloud & update UI instantly
+            saveTrackerToSupabase(); 
             renderAdvancedTracker();
         };
 
         calendarRow.appendChild(dayEl);
     });
 
+    // Update Stats
     const savedTotal = paidCount * dailyAmount;
     document.getElementById('saved-amount').innerText = `₦${savedTotal.toLocaleString()}`;
     document.getElementById('days-paid-count').innerText = `${paidCount} / 7`;
 
+    // Update Circular Ring
     const percentage = Math.round((paidCount / 7) * 100);
     document.getElementById('progress-percent').innerText = `${percentage}%`;
     
@@ -150,10 +195,10 @@ function renderAdvancedTracker() {
     }
 }
 
-function resetWeek() {
+async function resetWeek() {
     if(confirm("Are you sure you want to reset your tracker for this week? This cannot be undone.")) {
         trackerData = {};
-        localStorage.setItem('empireAdvancedTracker', JSON.stringify(trackerData));
+        await saveTrackerToSupabase(); // Clear in Supabase
         renderAdvancedTracker();
     }
 }
@@ -170,124 +215,5 @@ function contactAdmin() {
     window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello Admin, I need help with my contribution.")}`, '_blank');
 }
 
-// --- 7. Register User (Supabase) ---
-async function registerUser() {
-    const input = document.getElementById('reg-input').value.trim();
-    if (!input) return alert("Please enter an email or phone number.");
-
-    const btn = event.target;
-    btn.innerText = "Generating...";
-    btn.disabled = true;
-
-    try {
-        // Check if user exists
-        const { data: existingUser } = await supabase
-            .from('users')
-            .select('email_phone')
-            .eq('email_phone', input)
-            .maybeSingle();
-
-        if (existingUser) {
-            alert("This email or phone number is already registered.");
-            btn.innerText = "Generate My ID & PIN";
-            btn.disabled = false;
-            return;
-        }
-
-        const userId = "EMP-" + Math.floor(1000 + Math.random() * 9000);
-        const pin = Math.floor(1000 + Math.random() * 9000).toString();
-
-        const { error: insertError } = await supabase
-            .from('users')
-            .insert([{ 
-                user_id: userId, 
-                email_phone: input, 
-                pin: pin 
-            }]);
-
-        if (insertError) throw insertError;
-
-        document.getElementById('register-section').style.display = 'none';
-        document.getElementById('id-display').style.display = 'block';
-        document.getElementById('display-userid').innerText = userId;
-        document.getElementById('display-pin').innerText = pin;
-
-    } catch (error) {
-        console.error(error);
-        alert("Error: " + (error.message || "Could not connect to database."));
-    } finally {
-        btn.innerText = "Generate My ID & PIN";
-        btn.disabled = false;
-    }
-}
-
-// --- 8. Recovery Toggles ---
-function toggleRecovery(type) {
-    const passForm = document.getElementById('recover-password-form');
-    const emailForm = document.getElementById('recover-email-form');
-
-    if (type === 'password') {
-        passForm.style.display = passForm.style.display === 'none' ? 'block' : 'none';
-        emailForm.style.display = 'none';
-    } else {
-        emailForm.style.display = emailForm.style.display === 'none' ? 'block' : 'none';
-        passForm.style.display = 'none';
-    }
-}
-
-// --- 9. Recover Password (By Email) ---
-async function recoverPassword() {
-    const input = document.getElementById('recover-email').value.trim();
-    const resultText = document.getElementById('password-result');
-    
-    if (!input) return alert("Please enter your Email or Phone.");
-    resultText.innerText = "Searching...";
-    resultText.style.color = "var(--text-muted)";
-
-    try {
-        const { data, error } = await supabase
-            .from('users')
-            .select('pin')
-            .eq('email_phone', input)
-            .maybeSingle();
-
-        if (data) {
-            resultText.innerHTML = `Your PIN is: <br><span style="font-size: 24px; color: var(--whatsapp-green);">${data.pin}</span>`;
-        } else {
-            resultText.innerText = "Email or Phone not found.";
-            resultText.style.color = "#ff4d4d";
-        }
-    } catch (error) {
-        resultText.innerText = "Network error.";
-    }
-}
-
-// --- 10. Recover Email (By PIN) ---
-async function recoverEmail() {
-    const input = document.getElementById('recover-pin').value.trim();
-    const resultText = document.getElementById('email-result');
-    
-    if (!input || input.length !== 4) return alert("Please enter your 4-digit PIN.");
-    resultText.innerText = "Searching...";
-    resultText.style.color = "var(--text-muted)";
-
-    try {
-        const { data, error } = await supabase
-            .from('users')
-            .select('email_phone')
-            .eq('pin', input)
-            .maybeSingle();
-
-        if (data) {
-            resultText.innerHTML = `Your Email/Phone is: <br><span style="font-size: 16px; color: var(--whatsapp-green);">${data.email_phone}</span>`;
-        } else {
-            resultText.innerText = "PIN not found.";
-            resultText.style.color = "#ff4d4d";
-        }
-    } catch (error) {
-        resultText.innerText = "Network error.";
-    }
-}
-
 // Initialize App
-renderAdvancedTracker();
+loadTrackerFromSupabase(); // Load from cloud instead of local storage
