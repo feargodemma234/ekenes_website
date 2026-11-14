@@ -1,11 +1,10 @@
 // --- SUPABASE CONFIGURATION ---
-// This connects your Tracker to the cloud so it saves across devices
 const SUPABASE_URL = "https://bextrzhnqzqsnrjuqplb.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_XEJYuY6BdMzjcM8Bq4jFAA_to92CRkY";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- APP CONFIGURATION ---
-const ADMIN_WHATSAPP_NUMBER = "2348012345678"; // <-- CHANGE THIS TO YOUR WHATSAPP NUMBER
+const ADMIN_WHATSAPP_NUMBER = "2348012345678"; // <-- CHANGE TO YOUR WHATSAPP NUMBER
 const ACCOUNT_NUMBER = "935704";
 let selectedReceiptFile = null;
 
@@ -77,7 +76,7 @@ async function sendWhatsAppReceipt() {
     }
 }
 
-// --- 4. SUPABASE CLOUD TRACKER LOGIC ---
+// --- 4. BULLETPROOF HYBRID TRACKER (Local + Cloud) ---
 const dailyAmount = 200;
 const today = new Date();
 const currentDay = today.getDay(); 
@@ -93,17 +92,20 @@ for (let i = 0; i < 7; i++) {
     weekDays.push(day);
 }
 
-let trackerData = {}; // Loaded from Supabase
+// Load from LocalStorage FIRST (so it never fails to show up)
+let trackerData = JSON.parse(localStorage.getItem('empireTrackerData')) || {};
 let deviceId = localStorage.getItem('empire_device_id');
 
-// Generate a unique ID for this phone/browser if they don't have one
 if (!deviceId) {
-    deviceId = crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Math.random().toString(36).substr(2, 9);
+    deviceId = Math.random().toString(36).substr(2, 9); // Fallback if crypto fails
     localStorage.setItem('empire_device_id', deviceId);
 }
 
-// Load data from Supabase
-async function loadTrackerFromSupabase() {
+// Draw the UI immediately
+renderAdvancedTracker();
+
+// Then sync with Supabase in the background
+async function syncWithSupabase() {
     try {
         const { data, error } = await supabase
             .from('trackers')
@@ -112,16 +114,20 @@ async function loadTrackerFromSupabase() {
             .maybeSingle();
 
         if (data && data.paid_days) {
+            // If cloud has data, update local and re-render
             trackerData = data.paid_days;
+            localStorage.setItem('empireTrackerData', JSON.stringify(trackerData));
+            renderAdvancedTracker();
+        } else {
+            // If cloud is empty, push local data up
+            saveToSupabase();
         }
     } catch (error) {
-        console.error("Error loading tracker:", error);
+        console.warn("Cloud sync failed. Working locally.", error);
     }
-    renderAdvancedTracker();
 }
 
-// Save data to Supabase
-async function saveTrackerToSupabase() {
+async function saveToSupabase() {
     try {
         await supabase
             .from('trackers')
@@ -131,7 +137,7 @@ async function saveTrackerToSupabase() {
                 updated_at: new Date()
             });
     } catch (error) {
-        console.error("Error saving tracker:", error);
+        console.warn("Could not save to cloud.", error);
     }
 }
 
@@ -169,8 +175,11 @@ function renderAdvancedTracker() {
         dayEl.onclick = () => {
             if (isFuture) return; 
             trackerData[dateStr] = !trackerData[dateStr];
-            saveTrackerToSupabase(); 
-            renderAdvancedTracker();
+            
+            // Save Locally FIRST, then to cloud
+            localStorage.setItem('empireTrackerData', JSON.stringify(trackerData));
+            renderAdvancedTracker(); 
+            saveToSupabase(); 
         };
 
         calendarRow.appendChild(dayEl);
@@ -196,8 +205,9 @@ function renderAdvancedTracker() {
 async function resetWeek() {
     if(confirm("Are you sure you want to reset your tracker for this week? This cannot be undone.")) {
         trackerData = {};
-        await saveTrackerToSupabase(); 
+        localStorage.setItem('empireTrackerData', JSON.stringify(trackerData));
         renderAdvancedTracker();
+        await saveToSupabase(); 
     }
 }
 
@@ -213,5 +223,5 @@ function contactAdmin() {
     window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello Admin, I need help with my contribution.")}`, '_blank');
 }
 
-// Initialize App
-loadTrackerFromSupabase();
+// Start Cloud Sync
+syncWithSupabase();
