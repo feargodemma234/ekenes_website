@@ -3,7 +3,6 @@ const SUPABASE_URL = "https://bextrzhnqzqsnrjuqplb.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_XEJYuY6BdMzjcM8Bq4jFAA_to92CRkY";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- APP CONFIGURATION ---
 const ADMIN_WHATSAPP_NUMBER = "2348012345678"; // <-- CHANGE TO YOUR WHATSAPP NUMBER
 const ACCOUNT_NUMBER = "935704";
 let selectedReceiptFile = null;
@@ -70,144 +69,83 @@ async function sendWhatsAppReceipt() {
 
     const fallbackText = selectedReceiptFile ? `${message} (I am attaching my receipt now...)` : `${message} Here is my payment receipt:`;
     window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(fallbackText)}`, '_blank');
-
-    if (selectedReceiptFile && (!navigator.canShare)) {
-        alert("WhatsApp is opening. Please attach your saved receipt image manually in the chat.");
-    }
 }
 
-// --- 4. BULLETPROOF HYBRID TRACKER (Local + Cloud) ---
+// --- 4. SIMPLIFIED BULLETPROOF TRACKER ---
 const dailyAmount = 200;
-const today = new Date();
-const currentDay = today.getDay(); 
-const distanceToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
-const monday = new Date(today);
-monday.setDate(today.getDate() + distanceToMonday);
-monday.setHours(0,0,0,0);
-
-const weekDays = [];
-for (let i = 0; i < 7; i++) {
-    const day = new Date(monday);
-    day.setDate(monday.getDate() + i);
-    weekDays.push(day);
-}
-
-// Load from LocalStorage FIRST (so it never fails to show up)
+const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 let trackerData = JSON.parse(localStorage.getItem('empireTrackerData')) || {};
-let deviceId = localStorage.getItem('empire_device_id');
+let deviceId = localStorage.getItem('empire_device_id') || 'dev-' + Math.random().toString(36).substr(2, 9);
+localStorage.setItem('empire_device_id', deviceId);
 
-if (!deviceId) {
-    deviceId = Math.random().toString(36).substr(2, 9); // Fallback if crypto fails
-    localStorage.setItem('empire_device_id', deviceId);
-}
-
-// Draw the UI immediately
-renderAdvancedTracker();
-
-// Then sync with Supabase in the background
-async function syncWithSupabase() {
-    try {
-        const { data, error } = await supabase
-            .from('trackers')
-            .select('paid_days')
-            .eq('device_id', deviceId)
-            .maybeSingle();
-
-        if (data && data.paid_days) {
-            // If cloud has data, update local and re-render
-            trackerData = data.paid_days;
-            localStorage.setItem('empireTrackerData', JSON.stringify(trackerData));
-            renderAdvancedTracker();
-        } else {
-            // If cloud is empty, push local data up
-            saveToSupabase();
-        }
-    } catch (error) {
-        console.warn("Cloud sync failed. Working locally.", error);
-    }
-}
-
-async function saveToSupabase() {
-    try {
-        await supabase
-            .from('trackers')
-            .upsert({ 
-                device_id: deviceId, 
-                paid_days: trackerData,
-                updated_at: new Date()
-            });
-    } catch (error) {
-        console.warn("Could not save to cloud.", error);
-    }
-}
-
-function renderAdvancedTracker() {
+// Instantly draw the days on the screen
+function renderTracker() {
     const calendarRow = document.getElementById('calendar-row');
     if(!calendarRow) return; 
     
     calendarRow.innerHTML = '';
     let paidCount = 0;
-    const todayStr = new Date().toISOString().split('T')[0];
 
-    weekDays.forEach((dateObj, index) => {
-        const dateStr = dateObj.toISOString().split('T')[0];
-        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
-        const dayNum = dateObj.getDate();
-        const isPaid = trackerData[dateStr] === true;
-        const isFuture = dateStr > todayStr;
-        const isToday = dateStr === todayStr;
-
+    daysOfWeek.forEach((day, index) => {
+        const isPaid = trackerData[day] === true;
         if (isPaid) paidCount++;
 
         const dayEl = document.createElement('div');
-        dayEl.className = `cal-day ${isPaid ? 'paid' : ''} ${isFuture ? 'disabled' : ''}`;
+        dayEl.className = `cal-day ${isPaid ? 'paid' : ''}`;
         
-        if (isToday && !isPaid) {
-            dayEl.style.borderColor = "var(--accent-purple)";
-            dayEl.style.boxShadow = "0 0 10px rgba(168, 85, 247, 0.3)";
-        }
-
         dayEl.innerHTML = `
-            <span class="cal-day-name">${dayName}</span>
-            <span class="cal-day-num">${dayNum}</span>
+            <span class="cal-day-name">${day.charAt(0)}</span>
+            <span class="cal-day-num">${index + 1}</span>
         `;
 
         dayEl.onclick = () => {
-            if (isFuture) return; 
-            trackerData[dateStr] = !trackerData[dateStr];
-            
-            // Save Locally FIRST, then to cloud
+            trackerData[day] = !trackerData[day];
             localStorage.setItem('empireTrackerData', JSON.stringify(trackerData));
-            renderAdvancedTracker(); 
-            saveToSupabase(); 
+            renderTracker(); 
+            syncToCloud(); // Silently save to Supabase
         };
 
         calendarRow.appendChild(dayEl);
     });
 
     // Update Stats
-    const savedTotal = paidCount * dailyAmount;
-    document.getElementById('saved-amount').innerText = `₦${savedTotal.toLocaleString()}`;
+    document.getElementById('saved-amount').innerText = `₦${(paidCount * dailyAmount).toLocaleString()}`;
     document.getElementById('days-paid-count').innerText = `${paidCount} / 7`;
 
-    // Update Circular Ring
+    // Update Ring
     const percentage = Math.round((paidCount / 7) * 100);
     document.getElementById('progress-percent').innerText = `${percentage}%`;
-    
     const circle = document.getElementById('progress-ring');
     if(circle) {
-        const offset = 251.2 - (percentage / 100) * 251.2;
-        circle.style.strokeDashoffset = offset;
+        circle.style.strokeDashoffset = 251.2 - (percentage / 100) * 251.2;
         circle.setAttribute('stroke', percentage === 100 ? '#a855f7' : 'var(--whatsapp-green)');
     }
 }
 
-async function resetWeek() {
-    if(confirm("Are you sure you want to reset your tracker for this week? This cannot be undone.")) {
+// Cloud Sync Functions
+async function syncToCloud() {
+    try {
+        await supabase.from('trackers').upsert({ device_id: deviceId, paid_days: trackerData, updated_at: new Date() });
+    } catch (e) { console.log("Cloud save failed, saved locally."); }
+}
+
+async function loadFromCloud() {
+    try {
+        const { data } = await supabase.from('trackers').select('paid_days').eq('device_id', deviceId).maybeSingle();
+        if (data && data.paid_days && Object.keys(data.paid_days).length > 0) {
+            trackerData = data.paid_days;
+            localStorage.setItem('empireTrackerData', JSON.stringify(trackerData));
+            renderTracker();
+        }
+    } catch (e) { console.log("Cloud load failed, using local."); }
+}
+
+function resetWeek() {
+    if(confirm("Reset your tracker for this week?")) {
         trackerData = {};
         localStorage.setItem('empireTrackerData', JSON.stringify(trackerData));
-        renderAdvancedTracker();
-        await saveToSupabase(); 
+        renderTracker();
+        syncToCloud();
     }
 }
 
@@ -218,10 +156,10 @@ function toggleAccordion(button) {
     content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
 }
 
-// --- 6. Contact Admin ---
 function contactAdmin() {
-    window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello Admin, I need help with my contribution.")}`, '_blank');
+    window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello Admin, I need help.")}`, '_blank');
 }
 
-// Start Cloud Sync
-syncWithSupabase();
+// START THE APP
+renderTracker(); // Draw immediately!
+loadFromCloud(); // Then check for cloud updates
